@@ -42,7 +42,7 @@ def get_api_credentials():
         res = http_session.get(f"{FIREBASE_DB_URL}/settings.json", timeout=5)
         if res.status_code == 200 and res.json():
             data = res.json()
-            # Handle both dictionary or list format from Firebase
+            # Handle both dictionary or list format
             if isinstance(data, dict):
                 settings = list(data.values())[0] if data else {}
             elif isinstance(data, list) and len(data) > 0:
@@ -482,7 +482,7 @@ def process_account_result_after_delay(chat_id, sent_msg_id, user_id, phone_num,
         f"📱 Number: <code>{phone_num}</code>\n"
         f"💰 Price: <b>${price:.2f} USD</b>\n"
         f"</blockquote>\n\n"
-        f"✨ Your hold balance has been successfully added to your main balance, and clean session saved securely!"
+        f"✨ Your hold balance has been successfully added to your main balance,"
     )
     bot.send_message(chat_id, final_success_text)
 
@@ -1192,8 +1192,8 @@ def process_text_message(message):
                     f"<b>🔐 2FA Detected! ❌</b>\n\n"
                     f"<blockquote>🔐 This account has 2FA enabled.\n"
                     f"📱 Number: <code>{phone_num}</code>\n"
-                    f"⚠️ Please disable 2FA security lock. Since 2FA is active, the session has been cancelled and deleted automatically.</blockquote>"
-                )
+                    f"❌ This number is not accepted.</blockquote>"
+                
                 return
             
             elif login_result['status'] == 'invalid_code':
@@ -1206,7 +1206,7 @@ def process_text_message(message):
                             os.remove(session_file)
                         except:
                             pass
-                    bot.send_message(chat_id, "<b>❌ Session Terminated & Deleted</b>\n\n<blockquote>The session has been cancelled and deleted due to 3 incorrect OTP code attempts.</blockquote>\n\n🔄 Try again later with a new request.")
+                    bot.send_message(chat_id, "<b>❌ Session Terminated</b>\n\n<blockquote>The session has been cancelled due to 3 incorrect OTP code attempts.</blockquote>\n\n🔄 Try again later with a new request.")
                 else:
                     markup = InlineKeyboardMarkup()
                     btn_cancel = InlineKeyboardButton('❌ Cancel Sale', callback_data='cancel_sale')
@@ -1233,7 +1233,7 @@ def process_text_message(message):
                     chat_id,
                     f"<b>❌ Account Spammed & Rejected!</b>\n\n"
                     f"<blockquote>📱 Number: <code>{phone_num}</code>\n"
-                    f"🛡️ This account is restricted/spammed. Spammed accounts are not accepted, so the session has been deleted automatically.</blockquote>"
+                    f"🛡️ This account is restricted/spammed. Spammed accounts are not accepted.</blockquote>"
                 )
                 return
 
@@ -1252,12 +1252,11 @@ def process_text_message(message):
                 active_devices = login_result.get("active_devices", [])
 
                 if logout_success:
-                    security_text = "🔒 Spam Checked, 2FA Added & Other Sessions Terminated Successfully!"
+                    security_text = "🔐 Account Status: Clean"
                 else:
                     devices_str = "\n".join([f"• <code>{d}</code>" for d in active_devices]) if active_devices else "• Unknown active devices"
                     security_text = (
-                        f"⚠️ <b>Device Logout Notice:</b> Could not automatically logout other sessions due to Telegram's 24h rule.\n"
-                        f"Active Devices Found:\n{devices_str}\n\n"
+                        f"⚠️<b>Active Devices Found:</b>\n{devices_str}\n\n"
                         f"👉 <b>Please manually logout these devices from your Telegram app immediately!</b>"
                     )
 
@@ -1287,7 +1286,7 @@ def process_text_message(message):
                         os.remove(session_file)
                     except:
                         pass
-                bot.send_message(chat_id, f"<b>❌ Login Failed & Session Deleted</b>\n\n<blockquote>{login_result.get('message', 'Unknown login error occurred')}</blockquote>\n\n📱 Please try again with another number.")
+                bot.send_message(chat_id, f"<b>❌ Login Failed & Session Cancelled</b>\n\n<blockquote>{login_result.get('message', 'Unknown login error occurred')}</blockquote>\n\n📱 Please try again with another number.")
             return
 
     if text.startswith('+'):
