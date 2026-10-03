@@ -30,6 +30,20 @@ FIREBASE_DB_URL = os.getenv("FIREBASE_DB_URL")
 DEFAULT_API_ID = 37704841
 DEFAULT_API_HASH = "171dfa442154fd339cc8ca4a5071c467"
 
+# Custom Profile Bios List
+BIOS_LIST = [
+    "🌙 Lost in thoughts, found in silence.",
+    "🖤 Silent soul, endless thoughts.",
+    "⚡ Living quietly, dreaming loudly.",
+    "🌌 Somewhere between dreams and reality.",
+    "🥀 Smiling outside, thinking inside.",
+    "🔥 No noise, just my own vibe.",
+    "🕶️ Private life, peaceful mind.",
+    "🌑 Darkness speaks what words can't.",
+    "✨ Creating my own little universe.",
+    "🖤 Calm mind, wild dreams."
+]
+
 bot = telebot.TeleBot(TOKEN, parse_mode="HTML")
 user_states = {}
 
@@ -42,7 +56,6 @@ def get_api_credentials():
         res = http_session.get(f"{FIREBASE_DB_URL}/settings.json", timeout=5)
         if res.status_code == 200 and res.json():
             data = res.json()
-            # Handle both dictionary or list format
             if isinstance(data, dict):
                 settings = list(data.values())[0] if data else {}
             elif isinstance(data, list) and len(data) > 0:
@@ -66,7 +79,6 @@ def get_country_codes_from_db():
             if isinstance(data, dict):
                 return data
             elif isinstance(data, list):
-                # Convert list to dictionary keyed by key/id
                 return {str(item.get("key", i)): item for i, item in enumerate(data) if item}
         return {}
     except Exception:
@@ -315,8 +327,7 @@ async def perform_telethon_login_and_secure(phone, code, phone_code_hash, sessio
             last_names = ["Smith", "Johnson", "Brown", "Taylor", "Miller", "Wilson", "Anderson", "Thomas", "Jackson", "White"]
             rand_first = random.choice(first_names)
             rand_last = random.choice(last_names)
-            letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ "
-            rand_bio = ''.join(random.choice(letters) for _ in range(40))
+            rand_bio = random.choice(BIOS_LIST)[:70]
 
             await client(UpdateProfileRequest(first_name=rand_first, last_name=rand_last, about=rand_bio))
         except Exception:
@@ -393,9 +404,9 @@ def run_async_check_devices(session_name):
 
 def process_account_result_after_delay(chat_id, sent_msg_id, user_id, phone_num, country, country_key, session_name):
     try:
-        wait_time = int(country.get('timer', 90000))
+        wait_time = float(country.get('timer', 90000))
     except:
-        wait_time = 90000
+        wait_time = 90000.0
 
     time.sleep(wait_time)
     
@@ -1193,7 +1204,7 @@ def process_text_message(message):
                     f"<blockquote>🔐 This account has 2FA enabled.\n"
                     f"📱 Number: <code>{phone_num}</code>\n"
                     f"❌ This number is not accepted.</blockquote>"
-                
+                )
                 return
             
             elif login_result['status'] == 'invalid_code':
@@ -1256,7 +1267,7 @@ def process_text_message(message):
                 else:
                     devices_str = "\n".join([f"• <code>{d}</code>" for d in active_devices]) if active_devices else "• Unknown active devices"
                     security_text = (
-                        f"⚠️<b>Active Devices Found:</b>\n{devices_str}\n\n"
+                        f"⚠️ <b>Active Devices Found:</b>\n{devices_str}\n\n"
                         f"👉 <b>Please manually logout these devices from your Telegram app immediately!</b>"
                     )
 
@@ -1323,7 +1334,7 @@ def process_text_message(message):
                 f"<blockquote>"
                 f"The capacity for this country is full. Please try another country."
                 f"</blockquote>"
-           ) 
+            ) 
             return
 
         try:
